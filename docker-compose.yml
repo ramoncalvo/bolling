@@ -1,0 +1,20 @@
+# https://towardsdev.com/dockerize-your-apis-fastapi-part1-f44302652af9
+
+version: "3"
+
+services:
+  api:
+    build: ./
+    image: ramoncalvo2019/node-16-tmux-vim-curl-zsh
+    #command:  uvicorn main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+    command:  npm install
+    volumes:
+      - ./:/app
+    ports:
+      - 8000:8000
+    networks:
+      - test_network
+
+networks:
+  test_network:
+    driver: bridge

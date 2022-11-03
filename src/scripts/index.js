@@ -1,28 +1,40 @@
-import axios from 'axios'
+import axios from "axios";
 const callRangePrices = async (currency, from, to, interval) => {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${currency}?symbol=${currency}&period1=${from}&period2=${to}&interval=${interval}&includePrePost=true&events=div%7Csplit`
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${currency}?symbol=${currency}&period1=${from}&period2=${to}&interval=${interval}&includePrePost=true&events=div%7Csplit`;
 
-    // let res = await fetch(url);
-    axios.get(url)
-        .then(function (response) {
-            // handle success
-            console.log(response);
-        })
-        .catch(function (error) {
-            // handle error
-            console.log(error);
-        })
-        .finally(function () {
-            // always executed
-        });
-
-    if (res.ok) { // if HTTP-status is 200-299
+  // let res = await fetch(url);
+  axios
+    .get(url)
+    .then(function (response) {
+      // handle success
+    //   console.log(response);
+      if (response.status === 200) {
+        // if HTTP-status is 200-299
         // get the res body (the method explained below)
-        // let json = await res.json();
-        console.log(json)
-    } else {
-        console.log("HTTP-Error: " + res.status);
-    }
-}
+        let json = response.data;
+			// let res = json.chart.result
+			// console.log(json.chart)
+			console.log(json.chart.result[0])
+			console.log(json.chart.result[0].indicators.adjclose)
+	  } else {
+        console.log("HTTP-Error: " + response.status);
+      }
+    })
+    .catch(function (error) {
+      // handle error
+      console.log(error);
+    })
+    .finally(function () {
+      // always executed
+    });
 
-callRangePrices('DOGE-USD', 1667282400, 1667408400, '1d')
+  // if (res.ok) { // if HTTP-status is 200-299
+  //     // get the res body (the method explained below)
+  //     // let json = await res.json();
+  //     console.log(json)
+  // } else {
+  //     console.log("HTTP-Error: " + res.status);
+  // }
+};
+
+callRangePrices("DOGE-USD", 1667282400, 1667408400, "1d");

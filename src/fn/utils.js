@@ -1,3 +1,4 @@
+import axios from "axios";
 /*
      Calculating and plotting Bollinger Bands
      */
@@ -6,7 +7,7 @@ const SMAverage = 20; // Simple Moving Average
 const std = 2; // Standard deviation
 const decimalsForStockName = {
   STL: 1,
-  ABB: 5
+  ABB: 5,
 };
 
 const callRangePrices = async (currency, from, to, interval) => {
@@ -14,39 +15,47 @@ const callRangePrices = async (currency, from, to, interval) => {
   // from 1667282400
   // to 1667408400
   // interval 1d
-  
-  const query = `https://query1.finance.yahoo.com/v8/finance/chart/${currency}?symbol=${currency}&period1=${from}&period2=${to}&interval=${interval}&includePrePost=true&events=div%7Csplit`
-  let response = await fetch(query, { 
-    method: 'GET', 
-    // headers: headers, 
-    mode: 'no-cors', 
-    credentials: 'include' });
 
-  if (response.ok) { // if HTTP-status is 200-299
-    // get the response body (the method explained below)
-    let json = await response.json();
-    console.log(json)
-  } else {
-    alert("HTTP-Error: " + response.status);
-  }
-}
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${currency}?symbol=${currency}&period1=${from}&period2=${to}&interval=${interval}&includePrePost=true&events=div%7Csplit`;
+  axios
+    .get(url)
+    .then(function (response) {
+      // handle success
+      //   console.log(response);
+      if (response.status === 200) {
+        // if HTTP-status is 200-299
+        // get the res body (the method explained below)
+        let json = response.data.chart.result;
+        console.log(json);
+      } else {
+        console.log("HTTP-Error: " + response.status);
+      }
+    })
+    .catch(function (error) {
+      // handle error
+      console.log(error);
+    })
+    .finally(function () {
+      // always executed
+    });
+};
 
 const myMomentObject = (timestamp) => {
-  callRangePrices('DOGE-USD', 1667282400, 1667408400, '1d')
-  let momentUnix = moment(timestamp, 'YYYY-MM-DD').unix();
+  callRangePrices("DOGE-USD", 1667282400, 1667408400, "1d");
+  let momentUnix = moment(timestamp, "YYYY-MM-DD").unix();
   // console.log(timestamp, momentUnix);
-  return momentUnix
-}
+  return momentUnix;
+};
 
 export const getDataSet = (label, url) => {
-  myMomentObject('2021-10-16')
+  myMomentObject("2021-10-16");
   // renderChart(label, url)
   // return url
-}
+};
 
 const renderChart = (id, dataSet) => {
   // Taking out prices and putting into an array
-  var stockPrices = dataSet.map(el => el.last);
+  var stockPrices = dataSet.map((el) => el.last);
 
   // Generating object with arrays for each band
   let bBands = bollingerBands(stockPrices, SMAverage, std, id);
@@ -59,9 +68,9 @@ const renderChart = (id, dataSet) => {
   var bollingerBandDataMid = calculatePlotData(dataSet, bBands.midBand);
   var bollingerBandDataBot = calculatePlotData(dataSet, bBands.botBand);
 
-  var context = document.querySelector('#' + id).getContext('2d');
+  var context = document.querySelector("#" + id).getContext("2d");
   var stockChart = new Chart(context, {
-    type: 'line',
+    type: "line",
     data: {
       datasets: [
         {
@@ -69,34 +78,34 @@ const renderChart = (id, dataSet) => {
           fill: false,
           data: stockPrices,
           pointRadius: 0,
-          borderColor: '#1a41cc'
+          borderColor: "#1a41cc",
         },
         // Plotting additional data
         {
-          label: 'Top band',
+          label: "Top band",
           fill: false,
           data: bollingerBandDataTop,
           pointRadius: 0,
-          borderColor: '#fe1ffe',
-          borderWidth: 1
+          borderColor: "#fe1ffe",
+          borderWidth: 1,
         },
         {
-          label: 'SMA',
+          label: "SMA",
           fill: false,
           data: bollingerBandDataMid,
           pointRadius: 0,
-          borderColor: '#a6a2ab',
-          borderWidth: 2
+          borderColor: "#a6a2ab",
+          borderWidth: 2,
         },
         {
-          label: 'Bottom band',
+          label: "Bottom band",
           fill: false,
           data: bollingerBandDataBot,
           pointRadius: 0,
-          borderColor: '#fe1ffe',
-          borderWidth: 1
-        }
-      ]
+          borderColor: "#fe1ffe",
+          borderWidth: 1,
+        },
+      ],
     },
     options: {
       animation: false,
@@ -104,14 +113,14 @@ const renderChart = (id, dataSet) => {
       scales: {
         xAxes: [
           {
-            type: 'time',
-            display: true
-          }
-        ]
-      }
-    }
+            type: "time",
+            display: true,
+          },
+        ],
+      },
+    },
   });
-}
+};
 
 function bollingerBands(avPricesArray, SMAverage, std, stockName) {
   // Daily moving average - center band.
@@ -122,9 +131,8 @@ function bollingerBands(avPricesArray, SMAverage, std, stockName) {
   let botBand = [];
   // Array cannot be smaller than SMA-days count for average equation
   if (avPricesArray.length <= SMAverage) {
-    throw 'Data count is too small!';
+    throw "Data count is too small!";
   }
-
 
   // Getting decimals for stocks before entering the loop
 
@@ -146,8 +154,7 @@ function bollingerBands(avPricesArray, SMAverage, std, stockName) {
 
       // Calculating moving average which is a total sum of last SMA-number of results
       // divided by SMA-number of results
-      let midPoint =
-        workingArray.reduce(sumOfArray) / workingArray.length;
+      let midPoint = workingArray.reduce(sumOfArray) / workingArray.length;
 
       // Calculating top and bottom point of Bollinger Bands
       let topPoint = midPoint + standardDeviation * std;
@@ -163,7 +170,7 @@ function bollingerBands(avPricesArray, SMAverage, std, stockName) {
   return {
     midBand: midBand,
     topBand: topBand,
-    botBand: botBand
+    botBand: botBand,
   };
 }
 
@@ -174,7 +181,7 @@ function calculatePlotData(initialData, additionalData) {
   var chartData = initialData.map(function (item, index, array) {
     return {
       x: new Date(item.date).toISOString(),
-      y: additionalData ? additionalData[index] : item.last
+      y: additionalData ? additionalData[index] : item.last,
     };
   });
   return chartData;
